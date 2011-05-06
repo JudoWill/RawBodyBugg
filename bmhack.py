@@ -24,12 +24,6 @@ import numpy
 import argparse
 import csv
 
-try:
-    from PIL import Image
-    def ToImage(d):
-        return Image.fromarray(d)
-except ImportError:
-    print "PIL library not found. ToImage() func unavailable"
 
 def ParseLine(ln):
     ln = ln.rstrip("\r\n")
