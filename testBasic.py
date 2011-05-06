@@ -22,4 +22,12 @@ def test_basic_call():
                 cor.pop(None, None)
                 assert cor == tes, str(cor) + str(tes) + str(ind)
 
+def test_double_call():
 
+    cmd = shlex.split('python bmhack.py --fromDump=ftest.cpickle --fromSerial=COM1 --toCsv=nfile.csv')
+
+    try:
+        check_call(cmd)
+        assert True, 'Should have raised error!'
+    except:
+        pass
