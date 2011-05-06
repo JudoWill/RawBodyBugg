@@ -846,80 +846,6 @@ def ReadAllRecords(mem):
         v.append(r)
         offset += r[1]
 
-### OBSOLETE
-def ReadAllStruct(mem):
-    # mem may be an array, a string, or a list of packets
-    #
-    # Structure 3 (0x201: 658 - ~700 offset)
-    # No clear fixed record sizes, oddball info?
-    """ Attempt to parse a data table header"""
-    if type(mem) == ndarray:
-        mem= mem.tostring()
-    elif type(mem) == list:
-        packets = mem
-        mem = AssembleDataFromPackets(packets)
-        mem = mem.tostring()
-    tab=Table()
-    tab.s1=ReadStruct1(mem[0:110])
-    offset = 106
-    tab.s2=[]
-    tab.s4=[]
-    while True:
-        s2len=750
-        s2 = ReadStruct2(mem[offset:offset+s2len])
-        offset += s2len
-        print offset
-        (s4, next) = ReadStruct4(mem[offset:])
-        print offset, next
-        offset += next
-        if next != 0:
-            tab.s2.append(s2)
-            tab.s4.append(s4)
-        else:
-            break
-    if packets != None:
-        tab.fields = ReadFields(packets)
-        tab.layout = []
-        tab.data = []
-        for r in tab.s1:
-            if r[3] != 0:
-                tab.layout.extend(["ID_"+str(r[1])] + [tab.fields[i] for i in r[4] if i < 42])
-        for i in range(0, len(tab.s4)):
-            tab.data.append([])
-            for r in tab.s4[i]:
-                tab.data[i].append(ReadPackedData(tab.layout, r))
-    return tab
-
-### OBSOLETE
-def Struct1ToTabDelim(table):
-    out=[["N","TYPE_ID","NAME","DIV"] + ["CHAN"]*8 + ["BYTES"]]
-    for r in table:
-        out.append([r[0], r[1], r[2], r[3]] + [x for x in r[4]] + [r[5]])
-    return out
-
-### DEPRECATED
-def SaveStructTabDelim2(packets,fname=None):
-    table=ReadAllStruct(packets)
-    if fname != None:
-        # Write out
-        f=open(fname,"w")
-    else:
-        f=sys.stdout
-    WriteTabDelim( Struct1ToTabDelim(table.s1), f )
-    for i in range(0, len(table.data)):
-        f.write("UNK\t" + table.s2[i]['unk1'].encode('hex') + "\n") # timestamp?
-        f.write(string.join(["EPOCH", "TIME"] + table.layout, "\t") + "\n")
-        ts = table.s2[i]['timestamp'] # Timestamp
-        tdata = [[ts + 60*y, time.ctime(ts+60*y)] + table.data[i][y] for y in range(0, len(table.data[i]))]
-        WriteTabDelim( tdata, f )
-        #WriteTabDelim( table.data[i], f )
-    sys.stdout = f
-    PrintPacket2([x for x in packets if x[12] != '\x02'],color=False)
-    sys.stdout = sys.__stdout__
-    if fname != None:
-        f.close()
-    return
-
 def GetFields(type1Layout, type6Names):
     """Return a dictionary of field names for all record types listed in
     type1Layout"""
@@ -955,7 +881,7 @@ def RecordTable(packets):
         elif r[0]==53:
             lastTimestamp = r[2][6]
             lastTimestampRow = len(out)
-        if last.has_key(1) and last.has_key(6):
+        if 1 in last and 6 in last:
             f = GetFields(last[1], last[6])
             fields = ["EPOCH", "TIME"]
             for x in 16,17,18,19:
