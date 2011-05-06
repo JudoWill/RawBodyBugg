@@ -4,23 +4,12 @@
 #
 # July 2009 by Centi Benzo centibenzo@gmail.com
 #
+# Modified by Will Dampier (judowill@gmail.com)
+#
+#
 # THIS CODE IS DECLARED BY THE AUTHOR TO BE IN THE PUBLIC DOMAIN.
 # NO WARRANTY OF ANY KIND IS PROVIDED.
 #
-# See blog for notes: bodybugglinux.blogspot.com
-#
-# LIBRARY VERSION - z718a
-#
-# BodyMedia Notes
-# FCC ID PV8-MF filings provide internal photos
-# Interal photos reveal:
-#        -Fractus chip antenna
-#        -FTDI QFP-32 - from footprint, FT232BL? (8-bit parallel)
-#        -8-pin SSC chip
-#        -16-pin chip
-#        -16-pin chip
-#        -64-pin chip, blurred number *161*(?) - ?MSP430F1612? 16-bit MCU, 5120B RAM, 55kB Flash
-#        -LiPoly 3.7V 300mAh battery
 
 import string
 import struct
@@ -32,6 +21,7 @@ import time
 import math
 from numpy import array, ndarray, fromstring, zeros, resize
 import numpy
+import argparse
 
 try:
     from PIL import Image
@@ -1176,6 +1166,16 @@ def main(argv=None):
     return 0
 
 if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser(description='A function for extracting data from the BodyBugg.')
+    parser.add_argument('--fromSerial', type = str, help = 'Load data from a USB port')
+    parser.add_argument('--fromDump', type = str, help = 'Load data from a pickle-dump')
+    parser.add_argument('--toDump', type = str, help = 'Dump data into a pickle-file')
+    parser.add_argument('--toCsv', type = str, help = 'Create CSV file.')
+    parser.add_argument('--clear', type = bool, default = False, help = 'Clear data from BodyBugg')
+
+    args = parser.parse_args()
+
     sys.exit(main())
 
 
