@@ -724,31 +724,6 @@ class Table:
         s3=None
         s4=None
 
-### UNUSED
-def ReadFields(packets):
-    parsed = ParsePacket2(packets)
-    d=dict()
-    for x in parsed:
-        if x.has_key('bank') and x['bank'] == 0xb and x['reqbit'] == 0:
-            d[ord(x['body'][0])] = x['body'][1:].rstrip('\x00')
-    return d
-
-### OBSOLETE
-def ReadPackedData(fields, data):
-    h = data.tostring().encode('hex')
-    pos=0
-    v=[]
-    for i in range(0,len(fields)):
-        if fields[i][0:2] == 'ID':
-            # padded to byte aligned
-            if (pos % 2) == 1:
-                pos += 1
-            v.append(int(h[pos:pos+2],16))
-            pos += 2
-        else:
-            v.append(int("0"+h[pos:pos+3],16))
-            pos += 3
-    return v
 
 def FindAll(mem, sub, before=16, after=16, mod=32):
     """Finds occurances of a substring in a large string.
