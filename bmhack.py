@@ -1027,46 +1027,7 @@ def TryAndTest(ser, packet):
 
 ### Main function(s) ###
 
-
-def main(argv=None):
-    if argv == None:
-        argv=sys.argv
-    if len(args) > 0:
-        std.syserr.write("Error: extra arguments.    ")
- 
-class Usage(Exception):
-    def __init__(self, msg):
-        self.msg = msg
-
-def PrintUsage(argv, fhandle=None):
-    if fhandle==None:
-        f=sys.stdout
-    else:
-        f=fhandle
-    f.write( "USAGE: " + argv[0] + " [SOURCE] [TARGET] [TARGET] ...\n")
-    f.write( "Retrieve and convert data from a BodyMedia armband device\n")
-    f.write( "Convert from a packet source to one or more target formats\n")
-    f.write( "A packet source can be a live BodyMedia USB device, a cPickle\n")
-    f.write( "dump file of packets, or a capture file form a serial port sniffer.\n")
-    f.write( "\nSOURCES - specify only one\n")
-    f.write( "--fromSerial=<device>\t Extract data by quering a live USB device on the specified serial port\n")
-    f.write( "--fromDump=<filename>\t Read packets from a cPickle dump file saved previously\n")
-    f.write( "--fromFSPM=<filename>\t Parse packets from a 'Free Serial Port Monitor' by HDD Software.    <filename> is an export of the RequestView window.\n")
-    f.write( "\nTARGETS - specify one or more\n")
-    f.write( "--toDump=<filename>\t Write cPickle dump of all packet data\n")
-    f.write( "--toCsv=<filename>\t Write a Spreadsheet-compatible tab delimited file of most of the data\n")
-    f.write( "--toPackets=<filename>\t Write parsed packets in human-readable HEX format\n")
-    f.write( "--toMemDump=<filename>\t Write binary dump of device memory to filename\n")
-    f.write( "--toMemHex=<filename>\t Write human readable HEX dump of device memory to filename\n")
-    f.write( "--toMemHexColor=<filename>\t Write human readable COLOR HEX dump of device memory (ANSI Required)\n")
-    f.write(" \nNOTE: Specify '-' as a filename to output commands in order to write to stdout instead of a file\n")
-    f.write( "\nACTIONS\n")
-    f.write( "--clear\t Clear saved sensor data from the device\n")
-    if fhandle != None:
-        f.close()
-
 def main(args):
-
 
     # Load packet source (serial or file)
     if args.fromSerial:
