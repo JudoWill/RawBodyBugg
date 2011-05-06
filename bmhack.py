@@ -628,32 +628,6 @@ def ReadStruct1(d):
         d = d[22:]
     return r
 
-### OBSOLETE
-def ReadStruct2(d):
-    # Structure 2 - 0x201 offset 106
-    #
-    # String or column name list
-    # Records of length 10
-    # 9 byte string null terminated (pad?), 1 byte sequential ID or column number(?)
-    # We don't know how to determine list length.    We assume fixed 30 entries
-    # A fresh device will have no table.    We check.
-    if d[0] == '\xFF':
-        sys.stderr.write("ReadStruct2: No name list found - the device contains no data(?)\n")
-        return []
-    prefix=d[0:8] # TODO: Unidentified fields
-    d=d[8:]
-    r=[] # result
-    for i in range(0,42):
-        #r.append((ord(d[10*i + 9]), d[10*i:10*i + 8].rstrip('\x00')))
-        r.append((ord(d[10*i]), d[10*i+1:10*i + 9].rstrip('\x00')))
-    offset = 42*10
-    s1= ReadStruct1(d[offset:])
-    offset += 5*22 + 1    # Always 5 records
-    unk = d[offset] # Always 0x02 ??
-    offset += 1
-    timestamp=    HexStringToIntLSB( d[offset:offset+4] )
-    return {'unk1':prefix, 'fields':r, 'layout':s1, 'unk2':unk, 'timestamp':timestamp}
-
 
 class Table:
     def __init__(self):
