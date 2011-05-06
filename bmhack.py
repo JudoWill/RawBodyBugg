@@ -604,30 +604,6 @@ def MemPrettyPrint(mem, bank=None):
                 print "%04X %04X:" % (b[0], i),
                 HexPrintColor(mem.get(b[0], i, 46), "%02X")
 
-### OBSOLETE
-def ReadStruct1(d):
-    # Structure 1 (seen at 0x201 offset 0), contains 5 records
-    #         Exact copy of this structure also seen at 0x201534
-    # (hypothesis - data layout information), record length 22
-    #
-    # 1 byte unknown, 0x0 except for first entry of 0x1
-    # 1 byte record ID number(?)
-    # 9 byte null-terminated string field
-    # 11 byte data field
-    # 16-bit LSB "Div" field ("div" label from HTTP)
-    # 8 1-byte channel numbers (from HTTP)
-    # 1 byte record size number
-    r=[]
-    for i in range(0,5):
-        v = (ord(d[0]), ord(d[1]), d[2:11].rstrip('\x00'))
-        div = HexStringToInt(d[12] + d[11])
-        chan = [ord(x) for x in d[13:21]]
-        sz = ord(d[21])
-        v = (v[0], v[1], v[2], div, chan, sz)
-        r.append(v)
-        d = d[22:]
-    return r
-
 
 class Table:
     def __init__(self):
