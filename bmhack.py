@@ -1065,117 +1065,47 @@ def PrintUsage(argv, fhandle=None):
     if fhandle != None:
         f.close()
 
-def main(argv=None):
-    sys.stderr.write("""THIS CODE IS DECLARED BY THE AUTHOR TO BE IN THE PUBLIC DOMAIN.\nNO WARRANTY EXPRESSED OR IMPLIED OF ANY KIND IS PROVIDED.\n""")
-    if argv is None:
-        argv = sys.argv
-    try:
-        try:
-            opts, args = getopt.getopt(argv[1:], "h", ["help",
-                "fromSerial=", "fromSerialFull=", "fromDump=", "fromFSPM=", "toDump=", 
-                "toCsv=", "toPackets=", "toMemDump=", "toMemHex=", "toMemHexColor=", 
-                "clear"])
-            dopts = dict(opts)
-        except getopt.error, msg:
-            raise Usage(msg)
-        # Check for Help
-        if dopts.has_key("-h") or dopts.has_key("--help"):
-            PrintUsage(argv)
-            return 0
-        # Sanity checks
-        if dopts.has_key("--fromSerial") and dopts.has_key("--fromDump"):
-            raise Usage("ERROR: Cannot have both --fromSerial and --fromDump - only one packet source")
-        # Load packet source (serial or file)
-        if dopts.has_key("--fromSerial"):
-            ser = OpenSerial(dopts["--fromSerial"])
-            packets, mem = MemoryDump(ser)
-            ser.close()
-        elif dopts.has_key("--fromSerialFull"):
-            packets=FullSerialDump(dopts['--fromSerialFull'])
-        elif dopts.has_key("--fromDump"):
-            packets=cPickle.load(open(dopts['--fromDump'],"r"))
-        elif dopts.has_key("--fromFSPM"):
-            f=open(dopts['--fromFSPM'], "r")
-            lns = ParseFile(f)
-            f.close()
-            packets = ParsePacket2([x[1] for x in lns])
+def main(args):
+
+
+    # Load packet source (serial or file)
+    if args.fromSerial:
+        ser = OpenSerial(args.fromSerial)
+        packets, mem = MemoryDump(ser)
+        ser.close()
+    elif args.fromDump:
+        packets=cPickle.load(open(args.fromDump))
+
+    # Write out packet data
+    if args.toDump:
+        cPickle.dump(packets, open(args.fromDump,"w"), 2)
+    if args.toCsv:
+        SaveStructTabDelim3(packets, args.toCsv)
+
+    if args.clear:
+        # Clear device memory
+        if args.fromSerial:
+            fname = args.fromSerial
         else:
-            raise Usage("ERROR: Must provide either --fromSerial or --fromDump or other --from* packet source")
-        # Write out packet data
-        if dopts.has_key("--toDump"):
-            cPickle.dump(packets, open(dopts['--toDump'],"w"), 2)
-            print >>sys.stderr, "Wrote raw packet cPickle Dump to "+dopts['--toDump']
-        if dopts.has_key("--toCsv"):
-            if dopts['--toCsv'] != '-':
-                SaveStructTabDelim3(packets, dopts['--toCsv'])
-            else: # stdout
-                SaveStructTabDelim3(packets)
-            print >>sys.stderr, "Wrote tab-delimited CSV file to "+dopts['--toCsv']
-        if dopts.has_key("--toPackets"):
-            if dopts['--toPackets'] != '-':
-                f=open(dopts['--toPackets'],"w")
-                sys.stdout = f    # Kinda scary...
-                PrintPacket2(packets, color=False)
-                sys.stdout = sys.__stdout__
-                f.close()
-            else:
-                PrintPacket2(packets, color=False)
-        if dopts.has_key("--toMemDump"):
-            f=open(dopts['--toMemDump'], "w")
-            mem=AssembleDataFromPackets(packets)
-            f.write(mem)
-            f.close()
-            print >>sys.stderr, "Wrote binary device memory dump to %s" % dopts['--toMemDump']
-        if dopts.has_key("--toMemHex"):
-            mem=AssembleDataFromPackets(packets)
-            if dopts['--toMemHex'] != '-':
-                f=open(dopts['--toMemHex'], "w")
-                sys.stdout = f    # Kinda scary...
-                HexPrintMod(mem, 46, skip='\xff', skip2='\x00', color=False)
-                sys.stdout = sys.__stdout__
-                f.close()
-            else:
-                HexPrintMod(mem, 46, skip='\xff', skip2='\x00', color=False)
-            print >>sys.stderr, "Wrote hex device memory dump to %s" % dopts['--toMemHex']
-        if dopts.has_key("--toMemHexColor"):
-            mem=AssembleDataFromPackets(packets)
-            if dopts['--toMemHexColor'] != '-':
-                f=open(dopts['--toMemHexColor'], "w")
-                sys.stdout = f    # Kinda scary...
-                HexPrintMod(mem, 46, skip='\xff', skip2='\x00', color=True)
-                sys.stdout = sys.__stdout__
-                f.close()
-            else:
-                HexPrintMod(mem, 46, skip='\xff', skip2='\x00', color=True)
-        if dopts.has_key("--clear"):
-            # Clear device memory
-            if dopts.has_key("--fromSerial"):
-                fname = dopts["--fromSerial"]
-            elif dopts.has_key("--fromSerialFull"):
-                fname = dopts["--fromSerialFull"]
-            else:
-                raise Usage("ERROR: Must provide --fromSerial or --fromSerialFull to use --clear")
-            ser = OpenSerial(dopts["--fromSerial"])
-            ClearMemory(ser)
-            print >>sys.stderr, "Cleared logged sensor data from device"
-            ser.close()
-    except Usage, err:
-        print >>sys.stderr, err.msg
-        print >>sys.stderr, "for help use --help"
-        return -2
-    return 0
+            Warning, '--clear on makes sense when reading from USB ... ignoring'
+            return
+        ser = OpenSerial(args.fromSerial)
+        ClearMemory(ser)
+        ser.close()
+
 
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='A function for extracting data from the BodyBugg.')
-    parser.add_argument('--fromSerial', type = str, help = 'Load data from a USB port')
-    parser.add_argument('--fromDump', type = str, help = 'Load data from a pickle-dump')
+    group = parser.add_mutually_exclusive_group(required = True)
+    group.add_argument('--fromSerial', type = str, help = 'Load data from a USB port')
+    group.add_argument('--fromDump', type = str, help = 'Load data from a pickle-dump')
+
     parser.add_argument('--toDump', type = str, help = 'Dump data into a pickle-file')
     parser.add_argument('--toCsv', type = str, help = 'Create CSV file.')
     parser.add_argument('--clear', type = bool, default = False, help = 'Clear data from BodyBugg')
 
     args = parser.parse_args()
-
-    sys.exit(main())
+    main(args)
 
 
