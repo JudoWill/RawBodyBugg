@@ -654,68 +654,6 @@ def ReadStruct2(d):
     timestamp=    HexStringToIntLSB( d[offset:offset+4] )
     return {'unk1':prefix, 'fields':r, 'layout':s1, 'unk2':unk, 'timestamp':timestamp}
 
-### OBSOLETE
-def ReadStruct4(d,makeArray=True):
-    # Structure 4 (0x201: 810 - most of memory)
-    # Primary data structure, length 46
-    # Recognizable by vertical hex 10, 11, 12, 13
-    #
-    # Sub-Structure 4.10, length 13 
-    # 1 byte == 10
-    # 2 bytes == 2 byte MSB integer, usually increasing (but not always)
-    # 
-    # Sub-Structure 4.11, length 12
-    #
-    # Sub-Structure 4.12, length 12
-    #
-    # Sub-Structure 4.13, length 9
-    r=[]
-    ld=len(d)
-    # Scan for starting row - structure between s2 and s4 is occasionally a
-    # different size, and I'm not sure of how to parse it.
-    start=None
-    for i in range(0, min(46, ld-46)):
-        if d[i]=='\x10' and d[i+13]=='\x11' and d[i+13+12]=='\x12' and d[i+13+12+12]=='\x13':
-            start=i
-            break
-    if start == None:
-        sys.stderr.write("Cannot find any more sensor data on device")
-        return (r, 0)
-    if start != 0:
-        sys.stderr.write("Alignment shifted by "+str(start)+" bytes\n")
-    d=d[start:]
-    icorrection=0
-    for i in range(0, ld, 46):
-        if len(d)==0:
-            break
-        if d[0] != '\x10' and d[0] != '\x35':
-            sys.stderr.write("INFO: Struct4 Lost 0x10 marker after %i bytes" % (ld - len(d)) + " on byte 0x%x\n" % ord(d[0]))
-            HexPrintMod(d, 46, size=46*3)
-            break
-        if d[0] == '\x35': # Timestamp
-            s35=d[0:11]
-            sys.stderr.write("Timestamp: %x " % HexStringToIntLSB(s35[-4:]) + "\n")
-            s35 = [ord(x) for x in s35]
-            icorrection += 11
-        else:
-            s35=[0x35]+[0]*10
-        s10 = d[0:13]
-        s10 = [ord(x) for x in s10]
-        s11 = d[13:25]
-        s11 = [ord(x) for x in s11]
-        s12 = d[25:37]
-        s12 = [ord(x) for x in s12]
-        s13 = d[37:46]
-        s13 = [ord(x) for x in s13]
-        if makeArray:
-            r.append(s10 + s11 + s12 + s13 + s35)
-        else:
-            r.append([s10, s11, s12, s13])
-        d=d[46:]
-    if makeArray:
-        return (array(r,dtype='uint8'), i)
-    else:
-        return (r, i)
 
 class Table:
     def __init__(self):
