@@ -897,14 +897,6 @@ def Struct1ToTabDelim(table):
         out.append([r[0], r[1], r[2], r[3]] + [x for x in r[4]] + [r[5]])
     return out
 
-def WriteTabDelim(t,fhandle=None):
-    if fhandle == None:
-        fhandle=sys.stdout
-    for r in t:
-        for f in r:
-            fhandle.write(str(f)+"\t")
-        fhandle.write("\n")
-
 ### DEPRECATED
 def SaveStructTabDelim2(packets,fname=None):
     table=ReadAllStruct(packets)
@@ -972,19 +964,11 @@ def RecordTable(packets):
 
 def SaveStructTabDelim3(packets,fname=None):
     fields, records = RecordTable(packets)
-    print fields
-    print records[0]
     
     with open(fname, 'w') as handle:
         writer = csv.writer(handle, delimiter = '\t')
         writer.writerows([fields]+records)
-#    if fname != None:
-#        # Write out
-#        f=open(fname,"w")
-#        WriteTabDelim([fields] + records, f)
-#        f.close()
-#    else:
-#        WriteTabDelim([fields] + records)
+
 
 def RotateListOfLists(ad):
     return [array([x[i] for x in ad[1:]]) for i in range(0,len(ad[0]))]
