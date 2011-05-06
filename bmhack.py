@@ -22,6 +22,7 @@ import math
 from numpy import array, ndarray, fromstring, zeros, resize
 import numpy
 import argparse
+import csv
 
 try:
     from PIL import Image
@@ -971,13 +972,19 @@ def RecordTable(packets):
 
 def SaveStructTabDelim3(packets,fname=None):
     fields, records = RecordTable(packets)
-    if fname != None:
-        # Write out
-        f=open(fname,"w")
-        WriteTabDelim([fields] + records, f)
-        f.close()
-    else:
-        WriteTabDelim([fields] + records)
+    print fields
+    print records[0]
+    
+    with open(fname, 'w') as handle:
+        writer = csv.writer(handle, delimiter = '\t')
+        writer.writerows([fields]+records)
+#    if fname != None:
+#        # Write out
+#        f=open(fname,"w")
+#        WriteTabDelim([fields] + records, f)
+#        f.close()
+#    else:
+#        WriteTabDelim([fields] + records)
 
 def RotateListOfLists(ad):
     return [array([x[i] for x in ad[1:]]) for i in range(0,len(ad[0]))]

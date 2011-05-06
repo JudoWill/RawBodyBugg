@@ -19,6 +19,7 @@ def test_basic_call():
             treader = csv.DictReader(handle, delimiter = '\t')
             creader = csv.DictReader(rhandle, delimiter = '\t')
             for ind, (cor, tes) in enumerate(zip(creader, treader)):
+                cor.pop(None, None)
                 assert cor == tes, str(cor) + str(tes) + str(ind)
 
 
