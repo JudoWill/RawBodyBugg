@@ -23,7 +23,7 @@ from numpy import array, ndarray, fromstring, zeros, resize
 import numpy
 import argparse
 import csv
-
+import os, os.path
 
 def ParseLine(ln):
     ln = ln.rstrip("\r\n")
@@ -747,10 +747,12 @@ def RecordTable(packets):
 
 def SaveStructTabDelim3(packets,fname=None):
     fields, records = RecordTable(packets)
-    
-    with open(fname, 'w') as handle:
+    mode = 'a' if os.path.exists(fname) else 'w'
+    with open(fname, mode) as handle:
         writer = csv.writer(handle, delimiter = '\t')
-        writer.writerows([fields]+records)
+        if mode == 'w':
+            writer.writerow(fields)
+        writer.writerows(records)
 
 
 def RotateListOfLists(ad):
