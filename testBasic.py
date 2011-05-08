@@ -1,8 +1,24 @@
 import nose.tools
 from subprocess import check_call
+from itertools import izip_longest
 import shlex
 import csv
 import os.path, os
+
+
+def check_equal_files(cfile, tfile):
+    """Tests to check whether two CSV files are equivelent."""
+    
+    with open(tfile) as thandle:
+        with open(cfile) as chandle:
+            treader = csv.DictReader(thandle, delimiter = '\t')
+            creader = csv.DictReader(chandle, delimiter = '\t')
+            for ind, (cor, tes) in enumerate(izip_longest(creader, treader)):
+                if cor is None or tes is None:
+                    assert False, 'Files are not the same length!'
+                tes.pop(None, None)
+                assert cor == tes, str(cor) + str(tes) + str(ind)
+
 
 def test_basic_call():
 
@@ -14,14 +30,10 @@ def test_basic_call():
 
     assert os.path.exists('nfile.csv'), 'Did not create file!'
 
-    with open('nfile.csv') as handle:
-        with open('ftest.csv') as rhandle:
-            treader = csv.DictReader(handle, delimiter = '\t')
-            creader = csv.DictReader(rhandle, delimiter = '\t')
-            for ind, (cor, tes) in enumerate(zip(creader, treader)):
-                cor.pop(None, None)
-                assert cor == tes, str(cor) + str(tes) + str(ind)
-
+    check_equal_files('nfile.csv', 'ftest.csv')
+    
+    
+    
 def test_double_call():
 
     cmd = shlex.split('python bmhack.py --fromDump=ftest.cpickle --fromSerial=COM1 --toCsv=nfile.csv')
