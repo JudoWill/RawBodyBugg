@@ -4,6 +4,7 @@ from itertools import izip_longest
 import shlex
 import csv
 import os.path, os
+import cPickle
 
 import bmhack
 
@@ -43,6 +44,17 @@ def test_main_call_csv_only():
     assert os.path.exists(tfile), 'Did not create file!'
 
     check_equal_files(tfile, 'ftest.csv')
+    
+def test_main_call_dump_only():
+    
+    tfile = 'nfile.cpickle'
+    if os.path.exists(tfile):
+        os.remove(tfile)
+        
+    bmhack.main('ftest.cpickle', False, False, None, tfile)
+    assert os.path.exists(tfile), 'Did not create file!'
+    assert cPickle.load(open('ftest.cpickle')) == cPickle.load(open(tfile)), 'Files unequal!'
+    
     
 def test_double_call():
 
