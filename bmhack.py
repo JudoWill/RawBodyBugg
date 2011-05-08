@@ -801,30 +801,25 @@ def TryAndTest(ser, packet):
 
 ### Main function(s) ###
 
-def main(args):
+def main(ipath, fromSerial, clear, csvfile, dumpfile):
 
     # Load packet source (serial or file)
-    if args.fromSerial:
-        ser = OpenSerial(args.fromSerial)
+    if fromSerial:
+        ser = OpenSerial(ipath)
         packets, mem = MemoryDump(ser)
         ser.close()
-    elif args.fromDump:
-        packets=cPickle.load(open(args.fromDump))
+    else:
+        packets=cPickle.load(open(ipath))
 
     # Write out packet data
-    if args.toDump:
-        cPickle.dump(packets, open(args.fromDump,"w"), 2)
-    if args.toCsv:
-        SaveStructTabDelim3(packets, args.toCsv)
+    if dumpfile:
+        cPickle.dump(packets, open(dumpfile,"w"), 2)
+    if csvfile:
+        SaveStructTabDelim3(packets, csvfile)
 
-    if args.clear:
+    if clear and fromSerial:
         # Clear device memory
-        if args.fromSerial:
-            fname = args.fromSerial
-        else:
-            Warning, '--clear on makes sense when reading from USB ... ignoring'
-            return
-        ser = OpenSerial(args.fromSerial)
+        ser = OpenSerial(ipath)
         ClearMemory(ser)
         ser.close()
 
@@ -841,6 +836,14 @@ if __name__ == "__main__":
     parser.add_argument('--clear', type = bool, default = False, help = 'Clear data from BodyBugg')
 
     args = parser.parse_args()
-    main(args)
+    
+    csvfile = args.toCsv
+    dumpfile = args.toDump
+    clear = args.clear
+    
+    ipath = args.fromSerial or args.fromDump
+    fromSerial = args.fromSerial is not None
+    
+    main(ipath, fromSerial, clear, csvfile, dumpfile)
 
 

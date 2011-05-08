@@ -5,6 +5,7 @@ import shlex
 import csv
 import os.path, os
 
+import bmhack
 
 def check_equal_files(cfile, tfile):
     """Tests to check whether two CSV files are equivelent."""
@@ -32,7 +33,16 @@ def test_basic_call():
 
     check_equal_files('nfile.csv', 'ftest.csv')
     
+def test_main_call_csv_only():
     
+    tfile = 'nfile.csv'
+    if os.path.exists(tfile):
+        os.remove(tfile)
+        
+    bmhack.main('ftest.cpickle', False, False, tfile, None)
+    assert os.path.exists(tfile), 'Did not create file!'
+
+    check_equal_files(tfile, 'ftest.csv')
     
 def test_double_call():
 
