@@ -745,12 +745,12 @@ def RecordTable(packets):
                 fields.extend(f[x])
     return fields, out
 
-def SaveStructTabDelim3(packets,fname=None):
+def SaveStructTabDelim3(packets,fname=None, mode = 'a'):
     fields, records = RecordTable(packets)
-    mode = 'a' if os.path.exists(fname) else 'w'
+    need_headers = mode == 'w' or not os.path.exists(fname)
     with open(fname, mode) as handle:
         writer = csv.writer(handle, delimiter = '\t')
-        if mode == 'w':
+        if need_headers:
             writer.writerow(fields)
         writer.writerows(records)
 
@@ -803,7 +803,7 @@ def TryAndTest(ser, packet):
 
 ### Main function(s) ###
 
-def main(ipath, fromSerial, clear, csvfile, dumpfile):
+def main(ipath, fromSerial, clear, csvfile, dumpfile, mode = 'a'):
 
     # Load packet source (serial or file)
     if fromSerial:
@@ -815,9 +815,13 @@ def main(ipath, fromSerial, clear, csvfile, dumpfile):
 
     # Write out packet data
     if dumpfile:
-        cPickle.dump(packets, open(dumpfile,"w"), 2)
+        if mode == 'a' and os.path.exists(dumpfile):
+            prev_data = cPickle.load(open(dumpfile))
+        else:
+            prev_data = []
+        cPickle.dump(prev_data+packets, open(dumpfile,"w"), 2)
     if csvfile:
-        SaveStructTabDelim3(packets, csvfile)
+        SaveStructTabDelim3(packets, csvfile, mode = mode)
 
     if clear and fromSerial:
         # Clear device memory
@@ -836,16 +840,18 @@ if __name__ == "__main__":
     parser.add_argument('--toDump', type = str, help = 'Dump data into a pickle-file')
     parser.add_argument('--toCsv', type = str, help = 'Create CSV file.')
     parser.add_argument('--clear', type = bool, default = False, help = 'Clear data from BodyBugg')
+    parser.add_argument('--overwrite', type = bool, default = False, help = 'Appends data to files already there.')
 
     args = parser.parse_args()
     
     csvfile = args.toCsv
     dumpfile = args.toDump
     clear = args.clear
+    mode = 'w' if args.overwrite else 'a'
     
     ipath = args.fromSerial or args.fromDump
     fromSerial = args.fromSerial is not None
     
-    main(ipath, fromSerial, clear, csvfile, dumpfile)
+    main(ipath, fromSerial, clear, csvfile, dumpfile, mode = mode)
 
 
